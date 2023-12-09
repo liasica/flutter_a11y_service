@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'dart:async';
-
-import 'package:flutter/services.dart';
 import 'package:a11y_service/a11y_service.dart';
 
 void main() {
@@ -17,6 +14,15 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   final _plugin = A11yService();
+
+  @override
+  void initState() {
+    super.initState();
+
+    _plugin.onAccessibilityEvent.listen((event) {
+      print('$event');
+    });
+  }
 
   @override
   Widget build(BuildContext context) {

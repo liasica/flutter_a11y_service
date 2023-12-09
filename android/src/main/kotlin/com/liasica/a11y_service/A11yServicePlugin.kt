@@ -1,8 +1,9 @@
 package com.liasica.a11y_service
 
+import android.app.Activity
 import android.content.Context
-import android.content.Intent
-import android.provider.Settings
+import android.os.Handler
+import android.os.Looper
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
@@ -21,25 +22,29 @@ import io.flutter.plugin.common.MethodChannel.Result
 
 /** A11yServicePlugin */
 class A11yServicePlugin : FlutterPlugin, MethodCallHandler, DefaultLifecycleObserver, StreamHandler, ActivityAware {
-  /// The MethodChannel that will the communication between Flutter and native Android
-  ///
-  /// This local reference serves to register the plugin with the Flutter Engine and unregister it
-  /// when the Flutter Engine is detached from the Activity
+
   private lateinit var channel: MethodChannel
 
   private lateinit var context: Context
 
   private var _requestResult: Result? = null
 
+  private var _supportOverlayWindow: Boolean = false
+
+  private lateinit var activity: Activity
+
   companion object {
     private var es: EventSink? = null
 
-    val eventSink get() = es
+    fun sendEvent(event: Any) {
+      Handler(Looper.getMainLooper()).post {
+        es?.success(event)
+      }
+    }
   }
 
   override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
     context = flutterPluginBinding.applicationContext
-
 
     EventChannel(flutterPluginBinding.binaryMessenger, Constants.EVENT_CHANNEL_NAME).setStreamHandler(this)
 
@@ -51,6 +56,7 @@ class A11yServicePlugin : FlutterPlugin, MethodCallHandler, DefaultLifecycleObse
     when (call.method) {
       "isGranted" -> result.success(A11yService.isGranted)
       "requestPermission" -> requestPermission(result)
+      "showOverlayWindow" -> showOverlayWindow(call.arguments as Map<*, *>?, result)
       else -> result.notImplemented()
     }
   }
@@ -63,11 +69,8 @@ class A11yServicePlugin : FlutterPlugin, MethodCallHandler, DefaultLifecycleObse
     if (A11yService.isGranted) {
       result.success(true)
     } else {
-      // A11yService.instance?.requestPermission(context, result)
       _requestResult = result
-      context.startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
-        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-      })
+      context.requestPermission()
     }
   }
 
@@ -77,6 +80,8 @@ class A11yServicePlugin : FlutterPlugin, MethodCallHandler, DefaultLifecycleObse
   }
 
   override fun onAttachedToActivity(binding: ActivityPluginBinding) {
+    activity = binding.activity
+
     val lifecycle = getActivityLifecycle(binding)
     lifecycle.addObserver(this)
   }
@@ -101,5 +106,12 @@ class A11yServicePlugin : FlutterPlugin, MethodCallHandler, DefaultLifecycleObse
 
   override fun onCancel(arguments: Any?) {
     es = null
+  }
+
+  private fun showOverlayWindow(map: Map<*, *>?, result: Result) {
+    if (!_supportOverlayWindow) {
+      result.success(false)
+    }
+    TODO("Show overlay window")
   }
 }

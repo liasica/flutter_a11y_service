@@ -1,35 +1,34 @@
 package com.liasica.a11y_service
 
 import android.graphics.Rect
+import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
-import java.util.UUID
-
-data class EventData(
-  var packageName: String,
-  var className: String,
-  var eventType: Int
-) {
-  override fun toString() = "$packageName / $className : $eventType"
-}
 
 data class NodeData(
-  var uuid: UUID = UUID.randomUUID(),
-  var packageName: String,
-  var className: String,
-  var eventType: Int,
-  var text: String? = null,
-  var id: String? = null,
+  var depth: List<Int>,
+  var info: AccessibilityNodeInfo,
   var bounds: Rect? = null,
-  var description: String? = null,
-  var clickable: Boolean = false,
-  var scrollable: Boolean = false,
-  var editable: Boolean = false,
-  var nodeInfo: AccessibilityNodeInfo? = null
 ) {
-  override fun toString() = "$packageName / $className : $eventType { $className → $text → $id → $description → $bounds → $clickable → $scrollable → $editable }"
+  override fun toString() =
+    "$depth : ${info.packageName} / ${info.className} { ${info.viewIdResourceName} | ${info.text} | ${info.contentDescription} | $bounds | ${info.isClickable} | ${info.isScrollable} | ${info.isEditable} }"
+
+  fun toMap() = mapOf(
+    "depth" to depth,
+    "bounds" to bounds?.let {
+      listOf(it.left, it.top, it.right, it.bottom)
+    },
+    "id" to info.viewIdResourceName.nullableString(),
+    "text" to info.text.nullableString(),
+    "className" to info.className.nullableString(),
+    "packageName" to info.packageName.nullableString(),
+    "description" to info.contentDescription.nullableString(),
+    "clickable" to info.isClickable,
+    "scrollable" to info.isScrollable,
+    "editable" to info.isEditable,
+  )
 }
 
 data class AnalyzedResult(
-  val current: EventData? = null,
+  val current: AccessibilityEvent,
   val nodes: ArrayList<NodeData> = arrayListOf()
 )
