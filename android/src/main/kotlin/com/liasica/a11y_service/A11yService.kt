@@ -1,10 +1,7 @@
 package com.liasica.a11y_service
 
 import android.accessibilityservice.AccessibilityService
-import android.content.Context
-import android.content.Intent
 import android.graphics.Rect
-import android.provider.Settings
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 import io.flutter.Log

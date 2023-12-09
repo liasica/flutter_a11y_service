@@ -2,6 +2,7 @@ package com.liasica.a11y_service
 
 import android.content.Context
 import android.content.Intent
+import android.net.Uri
 import android.provider.Settings
 
 
@@ -11,6 +12,13 @@ fun String?.nullableString() = if (this.isNullOrBlank()) "" else this
 
 fun Context.requestPermission() {
   startActivity(Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS).apply {
+    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+  })
+}
+
+fun Context.openAppSettings(name: String) {
+  startActivity(Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+    data = Uri.fromParts("package", name, null)
     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
   })
 }
