@@ -31,7 +31,7 @@
             android:value="2" />
 
         <service
-            android:name="com.liasica.a11y_service.AccessibilityServiceListener"
+            android:name="com.liasica.a11y_service.A11yService"
             android:exported="true"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>
