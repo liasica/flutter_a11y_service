@@ -16,4 +16,8 @@ class A11yService {
   Stream<A11yServiceNode> get onAccessibilityEvent {
     return _eventChannel.receiveBroadcastStream().map((event) => A11yServiceNode.fromJson(Map.from(event)));
   }
+
+  Future<bool?> forceStopApp(String name, {String forceStop = '强行停止', String determine = '确定'}) async {
+    return await methodChannel.invokeMethod<bool>('forceStopApp', {'name': name, 'forceStop': forceStop, 'determine': determine});
+  }
 }

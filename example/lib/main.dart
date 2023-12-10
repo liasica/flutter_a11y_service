@@ -20,7 +20,7 @@ class _MyAppState extends State<MyApp> {
     super.initState();
 
     _plugin.onAccessibilityEvent.listen((event) {
-      print('$event');
+      // print('$event');
     });
   }
 
@@ -43,6 +43,13 @@ class _MyAppState extends State<MyApp> {
                     print('isGranted: $isGranted');
                   },
                   child: const Text('Request Permission'),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    final forceStopApp = await _plugin.forceStopApp('com.android.chrome');
+                    print('forceStopApp: $forceStopApp');
+                  },
+                  child: const Text('Force stop app'),
                 ),
               ],
             ),
