@@ -8,7 +8,9 @@ class Constants {
 
         const val EVENT_CHANNEL_NAME = "com.liasica.a11y_service/event"
 
-        const val SETTINGS_PACKAGE = "com.android.settings"
+        const val NAME_SETTINGS_PACKAGE = "com.android.settings"
+
+        const val NAME_ALERT_DIALOG = "androidx.appcompat.app.AlertDialog"
 
         const val TOUCH = "TOUCH"
     }

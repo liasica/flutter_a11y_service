@@ -2,11 +2,9 @@ package com.liasica.a11y_service
 
 import android.accessibilityservice.AccessibilityService
 import android.accessibilityservice.GestureDescription
-import android.content.Context
 import android.graphics.Path
 import android.graphics.Rect
 import android.os.Bundle
-import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 
 data class NodeData(

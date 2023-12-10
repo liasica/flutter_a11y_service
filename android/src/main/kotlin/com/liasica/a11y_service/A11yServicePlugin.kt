@@ -1,9 +1,7 @@
 package com.liasica.a11y_service
 
-import android.annotation.TargetApi
 import android.app.Activity
 import android.content.Context
-import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -128,18 +126,23 @@ class A11yServicePlugin : FlutterPlugin, MethodCallHandler, DefaultLifecycleObse
                 val forceStop = it["forceStop"] as String
                 val determine = it["determine"] as String
                 val found = AtomicBoolean(false)
-                val stopped = AtomicBoolean(false)
-                var success = false
-                val done = AtomicBoolean(false)
                 // TODO: 优化逻辑
-                A11yService.instance?.callback = { event: AccessibilityEvent?, analyzed: AnalyzedResult ->
-                    if (event?.packageName == Constants.SETTINGS_PACKAGE) {
+                A11yService.setAnalyzeTreeCallback { event, analyzed ->
+                    // Log.i("→→→", "$event")
+                    if (event.packageName == Constants.NAME_SETTINGS_PACKAGE) {
                         if (found.compareAndSet(false, true)) {
                             if (!analyzed.findNodeByText(forceStop).click()) {
                                 result.success(false)
-                                A11yService.instance?.callback = null
+                                A11yService.setAnalyzeTreeCallback(null)
+                                return@setAnalyzeTreeCallback
                             }
                         }
+                    }
+                    if (event.className!! == Constants.NAME_ALERT_DIALOG) {
+                        result.success(event.source.findTextAndClick(determine))
+                        A11yService.setAnalyzeTreeCallback(null)
+                        context.back()
+                        return@setAnalyzeTreeCallback
                     }
                 }
                 context.openAppSettings(it["name"] as String)

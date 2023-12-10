@@ -6,6 +6,8 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.provider.Settings
+import android.view.accessibility.AccessibilityEvent
+import android.view.accessibility.AccessibilityNodeInfo
 import androidx.annotation.RequiresApi
 
 fun Context.performAction(action: Int) = require().performGlobalAction(action)
@@ -55,4 +57,27 @@ fun Context.openAppSettings(name: String) {
         data = Uri.fromParts("package", name, null)
         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
     })
+}
+
+fun List<AccessibilityNodeInfo>?.click() : Boolean {
+    if (this == null) return false
+    for (node in this) {
+        if (node.isClickable && node.isEnabled) {
+            return node.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+        }
+    }
+    return false
+}
+
+fun AccessibilityNodeInfo?.findTextAndClick(text: String): Boolean {
+    this?.let {
+        val nodes = this.findAccessibilityNodeInfosByText(text)
+        for (node in nodes) {
+            if (node.isClickable && node.isEnabled) {
+                return node.performAction(AccessibilityNodeInfo.ACTION_CLICK)
+            }
+        }
+    }
+
+    return false
 }
