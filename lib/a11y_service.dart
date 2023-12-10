@@ -17,7 +17,13 @@ class A11yService {
     return _eventChannel.receiveBroadcastStream().map((event) => A11yServiceNode.fromJson(Map.from(event)));
   }
 
-  Future<bool?> forceStopApp(String name, {String forceStop = '强行停止', String determine = '确定'}) async {
+  Future<bool?> forceStopApp(
+    String name, {
+    String forceStop = '强行停止',
+    String determine = '确定',
+    String alertDialogName = 'android.app.AlertDialog',
+    String appDetailsName = 'com.android.settings.applications.InstalledAppDetailsTop',
+  }) async {
     return await methodChannel.invokeMethod<bool>('forceStopApp', {'name': name, 'forceStop': forceStop, 'determine': determine});
   }
 

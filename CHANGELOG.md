@@ -1,3 +1,7 @@
+## 0.0.2
+
+* Fix force stop
+
 ## 0.0.1
 
 * Add global actions

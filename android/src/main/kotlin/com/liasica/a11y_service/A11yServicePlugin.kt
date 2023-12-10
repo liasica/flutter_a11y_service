@@ -4,9 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
-import android.util.Log
-import android.view.accessibility.AccessibilityEvent
-import android.view.accessibility.AccessibilityNodeInfo
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
@@ -133,22 +130,22 @@ class A11yServicePlugin : FlutterPlugin, MethodCallHandler, DefaultLifecycleObse
             try {
                 val forceStop = it["forceStop"] as String
                 val determine = it["determine"] as String
+                val alertDialogName = it["alertDialogName"] as String? ?: Constants.NAME_ALERT_DIALOG
+                val appDetailsName = it["appDetailsName"] as String? ?: Constants.NAME_APP_DETAILS
                 val found = AtomicBoolean(false)
-                // TODO: 优化逻辑
-                A11yService.setAnalyzeTreeCallback { event, analyzed ->
-                    // Log.i("→→→", "$event")
-                    if (event.packageName == Constants.NAME_SETTINGS_PACKAGE) {
-                        if (found.compareAndSet(false, true)) {
-                            if (!analyzed.findNodeByText(forceStop).click()) {
-                                result.success(false)
-                                A11yService.setAnalyzeTreeCallback(null)
-                                return@setAnalyzeTreeCallback
-                            }
+                A11yService.setAnalyzeTreeCallback { event, _ ->
+                    if (event.className!! == appDetailsName && found.compareAndSet(false, true)) {
+                        if (!event.source.findTextAndClick(forceStop)) {
+                            result.success(false)
+                            context.back()
+                            A11yService.setAnalyzeTreeCallback(null)
+                            return@setAnalyzeTreeCallback
                         }
                     }
-                    if (event.className!! == Constants.NAME_ALERT_DIALOG) {
+                    if (event.className!! == alertDialogName) {
                         result.success(event.source.findTextAndClick(determine))
                         A11yService.setAnalyzeTreeCallback(null)
+                        Thread.sleep(100)
                         context.back()
                         return@setAnalyzeTreeCallback
                     }

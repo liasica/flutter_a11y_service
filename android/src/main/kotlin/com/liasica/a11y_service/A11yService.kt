@@ -9,7 +9,7 @@ import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 
 class A11yService : AccessibilityService() {
-    private val executor: ExecutorService = Executors.newFixedThreadPool(1)
+    private val executor: ExecutorService = Executors.newFixedThreadPool(4)
 
     // var callback: ((AccessibilityEvent?, AnalyzedResult) -> Unit)? = null
 
@@ -55,14 +55,15 @@ class A11yService : AccessibilityService() {
             val packageName = it.packageName.nullableString()
             // val eventType = it.eventType
 
+            // Log.d("→→→", "$event")
             if (className.isNotBlank() && packageName.isNotBlank()) {
                 executor.execute {
                     // Thread.sleep(100)
-                    val start = System.currentTimeMillis()
+                    // val start = System.currentTimeMillis()
                     val result = AnalyzedResult(nodes = arrayListOf())
                     analyzeTree(rootInActiveWindow, result)
                     analyzeTreeCallback?.invoke(it, result)
-                    Log.i(Constants.LOG_TAG, "analyze tree cost ${System.currentTimeMillis() - start}ms")
+                    // Log.d(Constants.LOG_TAG, "analyze tree cost ${System.currentTimeMillis() - start}ms")
                 }
             }
         }
