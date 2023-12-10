@@ -31,14 +31,14 @@ fun Context.notificationBar() = performAction(AccessibilityService.GLOBAL_ACTION
 fun Context.quickSettings() = performAction(AccessibilityService.GLOBAL_ACTION_QUICK_SETTINGS)
 
 // 锁屏
-@RequiresApi(Build.VERSION_CODES.P)
-fun Context.lockScreen() = performAction(AccessibilityService.GLOBAL_ACTION_LOCK_SCREEN)
+fun Context.lockScreen() = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+    performAction(AccessibilityService.GLOBAL_ACTION_LOCK_SCREEN)
+} else {
+    false
+}
 
 // 应用分屏
 fun Context.splitScreen() = performAction(AccessibilityService.GLOBAL_ACTION_TOGGLE_SPLIT_SCREEN)
-
-// 休眠
-fun Context.sleep(millis: Long) = Thread.sleep(millis)
 
 fun CharSequence?.nullableString() = if (this.isNullOrBlank()) "" else this.toString()
 
@@ -59,7 +59,7 @@ fun Context.openAppSettings(name: String) {
     })
 }
 
-fun List<AccessibilityNodeInfo>?.click() : Boolean {
+fun List<AccessibilityNodeInfo>?.click(): Boolean {
     if (this == null) return false
     for (node in this) {
         if (node.isClickable && node.isEnabled) {

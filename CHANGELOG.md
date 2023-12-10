@@ -1,3 +1,5 @@
 ## 0.0.1
 
-* TODO: Describe initial release.
+* Add global actions
+* Add force stop app
+* Add event listener

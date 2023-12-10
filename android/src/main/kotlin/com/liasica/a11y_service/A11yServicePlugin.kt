@@ -62,6 +62,14 @@ class A11yServicePlugin : FlutterPlugin, MethodCallHandler, DefaultLifecycleObse
             "requestPermission" -> requestPermission(result)
             "showOverlayWindow" -> showOverlayWindow(call.arguments as Map<*, *>?, result)
             "forceStopApp" -> forceStopApp(call.arguments as Map<*, *>?, result)
+            "actionBack" -> result.success(context.back())
+            "actionHome" -> result.success(context.home())
+            "actionRecent" -> result.success(context.recent())
+            "actionPowerDialog" -> result.success(context.powerDialog())
+            "actionNotificationBar" -> result.success(context.notificationBar())
+            "actionQuickSettings" -> result.success(context.quickSettings())
+            "actionLockScreen" -> result.success(context.lockScreen())
+            "actionSplitScreen" -> result.success(context.splitScreen())
             else -> result.notImplemented()
         }
     }

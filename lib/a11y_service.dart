@@ -20,4 +20,20 @@ class A11yService {
   Future<bool?> forceStopApp(String name, {String forceStop = '强行停止', String determine = '确定'}) async {
     return await methodChannel.invokeMethod<bool>('forceStopApp', {'name': name, 'forceStop': forceStop, 'determine': determine});
   }
+
+  Future<bool?> actionBack() => methodChannel.invokeMethod<bool>('actionBack');
+
+  Future<bool?> actionHome() => methodChannel.invokeMethod<bool>('actionHome');
+
+  Future<bool?> actionRecent() => methodChannel.invokeMethod<bool>('actionRecent');
+
+  Future<bool?> actionPowerDialog() => methodChannel.invokeMethod<bool>('actionPowerDialog');
+
+  Future<bool?> actionNotificationBar() => methodChannel.invokeMethod<bool>('actionNotificationBar');
+
+  Future<bool?> actionQuickSettings() => methodChannel.invokeMethod<bool>('actionQuickSettings');
+
+  Future<bool?> actionLockScreen() => methodChannel.invokeMethod<bool>('actionLockScreen');
+
+  Future<bool?> actionSplitScreen() => methodChannel.invokeMethod<bool>('actionSplitScreen');
 }
