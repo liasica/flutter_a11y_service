@@ -47,4 +47,28 @@ class A11yService {
   Future<bool?> actionLockScreen() => methodChannel.invokeMethod<bool>('actionLockScreen');
 
   Future<bool?> actionSplitScreen() => methodChannel.invokeMethod<bool>('actionSplitScreen');
+
+  /// Find text node and click
+  /// if [expectedText] is not null, it will compare with the [expectedText] of the expected node found, equal to return true
+  /// if [expectedText] is null, it will find [text] node found, and click it directly
+  Future<bool?> actionFindTextAndClick({
+    required String packageName,
+    required String text,
+    String? expectedText,
+    int? timeout = 10000,
+    bool? textAllMatch = true,
+    bool? includeDesc = true,
+    bool? descAllMatch = false,
+    bool? enableRegular = false,
+  }) =>
+      methodChannel.invokeMethod<bool>('actionFindTextAndClick', {
+        'packageName': packageName,
+        'text': text,
+        'expectedText': expectedText,
+        'timeout': timeout,
+        'textAllMatch': textAllMatch,
+        'includeDesc': includeDesc,
+        'descAllMatch': descAllMatch,
+        'enableRegular': enableRegular,
+      });
 }

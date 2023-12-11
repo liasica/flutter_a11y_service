@@ -1,3 +1,13 @@
+## 0.0.7
+
+* Change `doFindTextAndClick` to `actionFindTextAndClick`
+
+
+## 0.0.6
+
+* Add `doFindTextAndClick` method
+
+
 ## 0.0.5
 
 * Add permission state change stream

@@ -4,6 +4,8 @@ import android.app.Activity
 import android.content.Context
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
+import android.view.accessibility.AccessibilityEvent
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
@@ -88,6 +90,7 @@ class A11yServicePlugin : FlutterPlugin, MethodCallHandler, DefaultLifecycleObse
             "actionQuickSettings" -> result.success(context.quickSettings())
             "actionLockScreen" -> result.success(context.lockScreen())
             "actionSplitScreen" -> result.success(context.splitScreen())
+            "actionFindTextAndClick" -> actionFindTextAndClick(call.arguments as Map<*, *>?, result)
             else -> result.notImplemented()
         }
     }
@@ -171,6 +174,57 @@ class A11yServicePlugin : FlutterPlugin, MethodCallHandler, DefaultLifecycleObse
                 }
                 context.openAppSettings(it["name"] as String)
             } catch (e: Throwable) {
+                result.success(false)
+            }
+        }
+    }
+
+    private fun actionFindTextAndClick(map: Map<*, *>?, result: Result) {
+        map?.let {
+            try {
+                val packageName = it["packageName"] as String
+                val text = it["text"] as String
+                val expectedText = it["expectedText"] as String?
+                val timeout = (it["timeout"] as Int? ?: 10000).toLong()
+                val textAllMatch = it["textAllMatch"] as Boolean? ?: true
+                val includeDesc = it["includeDesc"] as Boolean? ?: true
+                val descAllMatch = it["descAllMatch"] as Boolean? ?: false
+                val enableRegular = it["enableRegular"] as Boolean? ?: false
+
+                val start = System.currentTimeMillis()
+                val handler = Handler(Looper.getMainLooper())
+
+                val success = AtomicBoolean(false)
+
+                handler.postDelayed({
+                    Log.d(Constants.LOG_TAG, "actionFindTextAndClick timeout, used: ${System.currentTimeMillis() - start}ms")
+                    A11yService.setAnalyzeTreeCallback(null)
+                    result.success(false)
+                }, timeout)
+
+                A11yService.setAnalyzeTreeCallback { event, analyzed ->
+                    if (event.packageName == packageName) {
+                        // find node and click it
+                        val node = analyzed.findNodeByText(text, textAllMatch = textAllMatch, includeDesc = includeDesc, descAllMatch = descAllMatch, enableRegular = enableRegular)
+                        node.click()
+
+                        // find expected node
+                        var expected = node.click()
+                        if (expectedText != null) {
+                            expected = analyzed.findNodeByText(expectedText, textAllMatch = textAllMatch, includeDesc = includeDesc, descAllMatch = descAllMatch, enableRegular = enableRegular) != null
+                        }
+
+                        Log.d(Constants.LOG_TAG, "expected: $expected, findNodeByText: $node, nodes: ${analyzed.nodes.size}")
+
+                        if (expected && success.compareAndSet(false, true)) {
+                            result.success(true)
+                            handler.removeCallbacksAndMessages(null)
+                            A11yService.setAnalyzeTreeCallback(null)
+                        }
+                    }
+                }
+            } catch (e: Throwable) {
+                Log.e(Constants.LOG_TAG, e.message, e)
                 result.success(false)
             }
         }
