@@ -1,3 +1,8 @@
+## 0.0.11
+
+* `forceStopApp` add 10s timeout
+
+
 ## 0.0.10
 
 * Rename `Nodes` to `A11yServiceNode`

@@ -156,18 +156,32 @@ class A11yServicePlugin : FlutterPlugin, MethodCallHandler, DefaultLifecycleObse
                 val alertDialogName = it["alertDialogName"] as String? ?: Constants.NAME_ALERT_DIALOG
                 val appDetailsName = it["appDetailsName"] as String? ?: Constants.NAME_APP_DETAILS
                 val found = AtomicBoolean(false)
+
+                val start = System.currentTimeMillis()
+                val handler = Handler(Looper.getMainLooper())
+                handler.postDelayed({
+                    Log.d(Constants.LOG_TAG, "forceStopApp timeout, used: ${System.currentTimeMillis() - start}ms")
+                    result.success(false)
+                    A11yService.setAnalyzeTreeCallback(null)
+                    Thread.sleep(100)
+                    context.back()
+                }, 10000)
+
                 A11yService.setAnalyzeTreeCallback { event, _ ->
                     if (event.className!! == appDetailsName && found.compareAndSet(false, true)) {
                         if (!event.source.findTextAndClick(forceStop)) {
                             result.success(false)
-                            context.back()
                             A11yService.setAnalyzeTreeCallback(null)
+                            handler.removeCallbacksAndMessages(null)
+                            Thread.sleep(100)
+                            context.back()
                             return@setAnalyzeTreeCallback
                         }
                     }
                     if (event.className!! == alertDialogName) {
                         result.success(event.source.findTextAndClick(determine))
                         A11yService.setAnalyzeTreeCallback(null)
+                        handler.removeCallbacksAndMessages(null)
                         Thread.sleep(100)
                         context.back()
                         return@setAnalyzeTreeCallback

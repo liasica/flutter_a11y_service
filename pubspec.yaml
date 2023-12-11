@@ -1,5 +1,5 @@
 name: a11y_service
-version: 0.0.10
+version: 0.0.11
 homepage: https://github.com/liasica/flutter_a11y_service
 description: A Flutter plugin for Android Accessibility Service.
 
