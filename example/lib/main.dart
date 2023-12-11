@@ -20,7 +20,11 @@ class _MyAppState extends State<MyApp> {
     super.initState();
 
     _plugin.onAccessibilityEvent.listen((event) {
-      // print('$event');
+      print('$event');
+    });
+
+    _plugin.onPermissionChanged.listen((isGranted) {
+      print('isGranted: $isGranted');
     });
   }
 

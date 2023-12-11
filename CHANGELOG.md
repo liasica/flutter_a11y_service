@@ -1,3 +1,8 @@
+## 0.0.5
+
+* Add permission state change stream
+
+
 ## 0.0.4
 
 * Fixed json data

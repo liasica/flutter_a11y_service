@@ -8,6 +8,8 @@ class Constants {
 
         const val EVENT_CHANNEL_NAME = "com.liasica.a11y_service/event"
 
+        const val PERMISSION_CHANNEL_NAME = "com.liasica.a11y_service/permission"
+
         const val TOUCH = "TOUCH"
 
         val NAME_SETTINGS_PACKAGE: CharSequence = "com.android.settings"

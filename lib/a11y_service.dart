@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 class A11yService {
   final methodChannel = const MethodChannel('com.liasica.a11y_service/method');
   static const _eventChannel = EventChannel('com.liasica.a11y_service/event');
+  static const _permissionChannel = EventChannel('com.liasica.a11y_service/permission');
 
   Future<bool?> requestPermission() async {
     return await methodChannel.invokeMethod<bool>('requestPermission');
@@ -15,6 +16,10 @@ class A11yService {
 
   Stream<Result> get onAccessibilityEvent {
     return _eventChannel.receiveBroadcastStream().map((event) => Result.fromJson(Map.from(event)));
+  }
+
+  Stream<bool> get onPermissionChanged {
+    return _permissionChannel.receiveBroadcastStream().map((event) => event as bool);
   }
 
   Future<bool?> forceStopApp(

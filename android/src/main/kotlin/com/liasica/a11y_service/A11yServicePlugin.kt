@@ -22,8 +22,7 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 
 /** A11yServicePlugin */
-class A11yServicePlugin : FlutterPlugin, MethodCallHandler, DefaultLifecycleObserver, StreamHandler, ActivityAware {
-
+class A11yServicePlugin : FlutterPlugin, MethodCallHandler, DefaultLifecycleObserver, ActivityAware {
     private lateinit var channel: MethodChannel
 
     private lateinit var context: Context
@@ -34,12 +33,16 @@ class A11yServicePlugin : FlutterPlugin, MethodCallHandler, DefaultLifecycleObse
 
     private lateinit var activity: Activity
 
+    private var permissionStream: EventSink? = null
+
+    private val _isGranted = AtomicBoolean(false)
+
     companion object {
-        private var es: EventSink? = null
+        private var eventStream: EventSink? = null
 
         fun sendEvent(event: Any) {
             Handler(Looper.getMainLooper()).post {
-                es?.success(event)
+                eventStream?.success(event)
             }
         }
     }
@@ -47,7 +50,25 @@ class A11yServicePlugin : FlutterPlugin, MethodCallHandler, DefaultLifecycleObse
     override fun onAttachedToEngine(flutterPluginBinding: FlutterPlugin.FlutterPluginBinding) {
         context = flutterPluginBinding.applicationContext
 
-        EventChannel(flutterPluginBinding.binaryMessenger, Constants.EVENT_CHANNEL_NAME).setStreamHandler(this)
+        EventChannel(flutterPluginBinding.binaryMessenger, Constants.EVENT_CHANNEL_NAME).setStreamHandler(object : StreamHandler {
+            override fun onListen(arguments: Any?, events: EventSink?) {
+                eventStream = events
+            }
+
+            override fun onCancel(arguments: Any?) {
+                eventStream = null
+            }
+        })
+
+        EventChannel(flutterPluginBinding.binaryMessenger, Constants.PERMISSION_CHANNEL_NAME).setStreamHandler(object : StreamHandler {
+            override fun onListen(arguments: Any?, events: EventSink?) {
+                permissionStream = events
+            }
+
+            override fun onCancel(arguments: Any?) {
+                permissionStream = null
+            }
+        })
 
         channel = MethodChannel(flutterPluginBinding.binaryMessenger, Constants.METHOD_CHANNEL_NAME)
         channel.setMethodCallHandler(this)
@@ -107,15 +128,13 @@ class A11yServicePlugin : FlutterPlugin, MethodCallHandler, DefaultLifecycleObse
 
     override fun onResume(owner: LifecycleOwner) {
         super.onResume(owner)
-        sendPermissionResult(A11yService.isGranted)
-    }
+        val isGranted = A11yService.isGranted
 
-    override fun onListen(arguments: Any?, events: EventSink?) {
-        es = events
-    }
+        sendPermissionResult(isGranted)
 
-    override fun onCancel(arguments: Any?) {
-        es = null
+        if (_isGranted.getAndSet(isGranted) != isGranted) {
+            permissionStream?.success(A11yService.isGranted)
+        }
     }
 
     private fun showOverlayWindow(map: Map<*, *>?, result: Result) {
