@@ -71,4 +71,13 @@ class A11yService {
         'descAllMatch': descAllMatch,
         'enableRegular': enableRegular,
       });
+
+  /// get current window node tree manually
+  Future<Result?> analyze() async {
+    final result = await methodChannel.invokeMethod('analyze');
+    if (result == null) {
+      return null;
+    }
+    return Result.fromJson(Map.from(result));
+  }
 }

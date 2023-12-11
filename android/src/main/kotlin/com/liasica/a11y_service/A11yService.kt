@@ -62,14 +62,19 @@ class A11yService : AccessibilityService() {
                 executor.execute {
                     // Thread.sleep(100)
                     // val start = System.currentTimeMillis()
-                    val result = AnalyzedResult(event = event, nodes = arrayListOf())
-                    analyzeTree(rootInActiveWindow, result)
+                    val result = analyze(event)
                     analyzeTreeCallback?.invoke(it, result)
                     A11yServicePlugin.sendEvent(result.toMap())
                     // Log.d(Constants.LOG_TAG, "analyze tree cost ${System.currentTimeMillis() - start}ms")
                 }
             }
         }
+    }
+
+    fun analyze(event: AccessibilityEvent? = null) : AnalyzedResult {
+        val result = AnalyzedResult(event = event, nodes = arrayListOf())
+        analyzeTree(rootInActiveWindow, result)
+        return result
     }
 
     private fun analyzeTree(node: AccessibilityNodeInfo?, list: AnalyzedResult, depth: List<Int>? = null) {

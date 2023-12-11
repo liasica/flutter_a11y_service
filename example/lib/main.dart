@@ -55,6 +55,13 @@ class _MyAppState extends State<MyApp> {
                   },
                   child: const Text('Force stop app'),
                 ),
+                ElevatedButton(
+                  onPressed: () async {
+                    final result = await _plugin.analyze();
+                    print('analyze: $result');
+                  },
+                  child: const Text('Analyze'),
+                ),
               ],
             ),
           ),

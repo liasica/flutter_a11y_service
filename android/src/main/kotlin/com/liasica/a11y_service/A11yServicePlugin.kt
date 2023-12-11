@@ -91,6 +91,7 @@ class A11yServicePlugin : FlutterPlugin, MethodCallHandler, DefaultLifecycleObse
             "actionLockScreen" -> result.success(context.lockScreen())
             "actionSplitScreen" -> result.success(context.splitScreen())
             "actionFindTextAndClick" -> actionFindTextAndClick(call.arguments as Map<*, *>?, result)
+            "analyze" -> result.success(A11yService.instance?.analyze()?.toMap())
             else -> result.notImplemented()
         }
     }
