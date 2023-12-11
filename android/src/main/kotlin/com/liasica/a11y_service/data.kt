@@ -5,6 +5,7 @@ import android.accessibilityservice.GestureDescription
 import android.graphics.Path
 import android.graphics.Rect
 import android.os.Bundle
+import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
 
 data class NodeData(
@@ -32,8 +33,19 @@ data class NodeData(
 }
 
 data class AnalyzedResult(
+    val event: AccessibilityEvent? = null,
     val nodes: ArrayList<NodeData> = arrayListOf()
-)
+) {
+    fun toMap() = mapOf(
+        "event" to mapOf(
+            "packageName" to event?.packageName.nullableString(),
+            "className" to event?.className.nullableString(),
+            "text" to event?.text?.joinToString(separator = " ~~ "),
+            "description" to event?.contentDescription.nullableString(),
+        ),
+        "nodes" to nodes.map { it.toMap() }
+    )
+}
 
 /**
  * 结点操作快速调用

@@ -1,4 +1,4 @@
-import 'package:a11y_service/a11y_service_node.dart';
+import 'package:a11y_service/result.dart';
 import 'package:flutter/services.dart';
 
 class A11yService {
@@ -13,8 +13,8 @@ class A11yService {
     return await methodChannel.invokeMethod<bool>('isGranted');
   }
 
-  Stream<A11yServiceNode> get onAccessibilityEvent {
-    return _eventChannel.receiveBroadcastStream().map((event) => A11yServiceNode.fromJson(Map.from(event)));
+  Stream<Result> get onAccessibilityEvent {
+    return _eventChannel.receiveBroadcastStream().map((event) => Result.fromJson(Map.from(event)));
   }
 
   Future<bool?> forceStopApp(

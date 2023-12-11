@@ -53,16 +53,19 @@ class A11yService : AccessibilityService() {
         event?.let {
             val className = it.className.nullableString()
             val packageName = it.packageName.nullableString()
-            // val eventType = it.eventType
+            val eventType = it.eventType
+            val text = it.text.joinToString(separator = " ~~ ")
+            val description = it.contentDescription.nullableString()
 
-            // Log.d("→→→", "$event")
+            Log.d(Constants.LOG_TAG, "event: $packageName / $className [ $eventType ] : { text = $text, description = $description }")
             if (className.isNotBlank() && packageName.isNotBlank()) {
                 executor.execute {
                     // Thread.sleep(100)
                     // val start = System.currentTimeMillis()
-                    val result = AnalyzedResult(nodes = arrayListOf())
+                    val result = AnalyzedResult(event = event, nodes = arrayListOf())
                     analyzeTree(rootInActiveWindow, result)
                     analyzeTreeCallback?.invoke(it, result)
+                    A11yServicePlugin.sendEvent(result.toMap())
                     // Log.d(Constants.LOG_TAG, "analyze tree cost ${System.currentTimeMillis() - start}ms")
                 }
             }
@@ -85,7 +88,7 @@ class A11yService : AccessibilityService() {
         // Log.i(Constants.LOG_TAG, data.toString())
 
         // send event to flutter
-        A11yServicePlugin.sendEvent(data.toMap())
+        // A11yServicePlugin.sendEvent(data.toMap())
 
         if (node.childCount > 0) {
             for (i in 0 until node.childCount) {
