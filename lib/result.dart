@@ -1,6 +1,6 @@
 class A11yServiceResult {
   A11yServiceEvent? event;
-  List<Node>? nodes;
+  List<A11yServiceNode>? nodes;
 
   A11yServiceResult({
     this.event,
@@ -9,7 +9,7 @@ class A11yServiceResult {
 
   A11yServiceResult copyWith({
     A11yServiceEvent? event,
-    List<Node>? nodes,
+    List<A11yServiceNode>? nodes,
   }) {
     return A11yServiceResult(
       event: event ?? this.event,
@@ -27,7 +27,7 @@ class A11yServiceResult {
   factory A11yServiceResult.fromJson(Map<String, dynamic> json) {
     return A11yServiceResult(
       event: json['event'] == null ? null : A11yServiceEvent.fromJson(Map.from(json['event'])),
-      nodes: (json['nodes'] as List<dynamic>?)?.map((e) => Node.fromJson(Map.from(e))).toList(),
+      nodes: (json['nodes'] as List<dynamic>?)?.map((e) => A11yServiceNode.fromJson(Map.from(e))).toList(),
     );
   }
 
@@ -105,7 +105,7 @@ class A11yServiceEvent {
       other is A11yServiceEvent && runtimeType == other.runtimeType && packageName == other.packageName && className == other.className && text == other.text && description == other.description;
 }
 
-class Node {
+class A11yServiceNode {
   List<int>? depth;
   List<int>? bounds;
   String? id;
@@ -117,7 +117,7 @@ class Node {
   bool? scrollable;
   bool? editable;
 
-  Node({
+  A11yServiceNode({
     this.depth,
     this.bounds,
     this.id,
@@ -130,7 +130,7 @@ class Node {
     this.editable,
   });
 
-  Node copyWith({
+  A11yServiceNode copyWith({
     List<int>? depth,
     List<int>? bounds,
     String? id,
@@ -142,7 +142,7 @@ class Node {
     bool? scrollable,
     bool? editable,
   }) {
-    return Node(
+    return A11yServiceNode(
       depth: depth ?? this.depth,
       bounds: bounds ?? this.bounds,
       id: id ?? this.id,
@@ -171,8 +171,8 @@ class Node {
     };
   }
 
-  factory Node.fromJson(Map<String, dynamic> json) {
-    return Node(
+  factory A11yServiceNode.fromJson(Map<String, dynamic> json) {
+    return A11yServiceNode(
       depth: (json['depth'] as List<dynamic>?)?.map((e) => e as int).toList(),
       bounds: (json['bounds'] as List<dynamic>?)?.map((e) => e as int).toList(),
       id: json['id'] as String?,
@@ -195,7 +195,7 @@ class Node {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is Node &&
+      other is A11yServiceNode &&
           runtimeType == other.runtimeType &&
           depth == other.depth &&
           bounds == other.bounds &&

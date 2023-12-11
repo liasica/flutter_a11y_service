@@ -1,6 +1,10 @@
-## 0.0.9
+## 0.0.10
 
 * Rename `Nodes` to `A11yServiceNode`
+
+
+## 0.0.9
+
 * Rename `Event` to `A11yServiceEvent`
 * Rename `Result` to `A11yServiceResult`
 
