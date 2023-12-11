@@ -1,17 +1,17 @@
-class Result {
-  Event? event;
-  List<Nodes>? nodes;
+class A11yServiceResult {
+  A11yServiceEvent? event;
+  List<Node>? nodes;
 
-  Result({
+  A11yServiceResult({
     this.event,
     this.nodes,
   });
 
-  Result copyWith({
-    Event? event,
-    List<Nodes>? nodes,
+  A11yServiceResult copyWith({
+    A11yServiceEvent? event,
+    List<Node>? nodes,
   }) {
-    return Result(
+    return A11yServiceResult(
       event: event ?? this.event,
       nodes: nodes ?? this.nodes,
     );
@@ -24,10 +24,10 @@ class Result {
     };
   }
 
-  factory Result.fromJson(Map<String, dynamic> json) {
-    return Result(
-      event: json['event'] == null ? null : Event.fromJson(Map.from(json['event'])),
-      nodes: (json['nodes'] as List<dynamic>?)?.map((e) => Nodes.fromJson(Map.from(e))).toList(),
+  factory A11yServiceResult.fromJson(Map<String, dynamic> json) {
+    return A11yServiceResult(
+      event: json['event'] == null ? null : A11yServiceEvent.fromJson(Map.from(json['event'])),
+      nodes: (json['nodes'] as List<dynamic>?)?.map((e) => Node.fromJson(Map.from(e))).toList(),
     );
   }
 
@@ -45,29 +45,29 @@ class Result {
   int get hashCode => Object.hash(event, nodes);
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is Result && runtimeType == other.runtimeType && event == other.event && nodes == other.nodes;
+  bool operator ==(Object other) => identical(this, other) || other is A11yServiceResult && runtimeType == other.runtimeType && event == other.event && nodes == other.nodes;
 }
 
-class Event {
+class A11yServiceEvent {
   String? packageName;
   String? className;
   String? text;
   String? description;
 
-  Event({
+  A11yServiceEvent({
     this.packageName,
     this.className,
     this.text,
     this.description,
   });
 
-  Event copyWith({
+  A11yServiceEvent copyWith({
     String? packageName,
     String? className,
     String? text,
     String? description,
   }) {
-    return Event(
+    return A11yServiceEvent(
       packageName: packageName ?? this.packageName,
       className: className ?? this.className,
       text: text ?? this.text,
@@ -84,8 +84,8 @@ class Event {
     };
   }
 
-  factory Event.fromJson(Map<String, dynamic> json) {
-    return Event(
+  factory A11yServiceEvent.fromJson(Map<String, dynamic> json) {
+    return A11yServiceEvent(
       packageName: json['packageName'] as String?,
       className: json['className'] as String?,
       text: json['text'] as String?,
@@ -102,10 +102,10 @@ class Event {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is Event && runtimeType == other.runtimeType && packageName == other.packageName && className == other.className && text == other.text && description == other.description;
+      other is A11yServiceEvent && runtimeType == other.runtimeType && packageName == other.packageName && className == other.className && text == other.text && description == other.description;
 }
 
-class Nodes {
+class Node {
   List<int>? depth;
   List<int>? bounds;
   String? id;
@@ -117,7 +117,7 @@ class Nodes {
   bool? scrollable;
   bool? editable;
 
-  Nodes({
+  Node({
     this.depth,
     this.bounds,
     this.id,
@@ -130,7 +130,7 @@ class Nodes {
     this.editable,
   });
 
-  Nodes copyWith({
+  Node copyWith({
     List<int>? depth,
     List<int>? bounds,
     String? id,
@@ -142,7 +142,7 @@ class Nodes {
     bool? scrollable,
     bool? editable,
   }) {
-    return Nodes(
+    return Node(
       depth: depth ?? this.depth,
       bounds: bounds ?? this.bounds,
       id: id ?? this.id,
@@ -171,8 +171,8 @@ class Nodes {
     };
   }
 
-  factory Nodes.fromJson(Map<String, dynamic> json) {
-    return Nodes(
+  factory Node.fromJson(Map<String, dynamic> json) {
+    return Node(
       depth: (json['depth'] as List<dynamic>?)?.map((e) => e as int).toList(),
       bounds: (json['bounds'] as List<dynamic>?)?.map((e) => e as int).toList(),
       id: json['id'] as String?,
@@ -195,7 +195,7 @@ class Nodes {
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      other is Nodes &&
+      other is Node &&
           runtimeType == other.runtimeType &&
           depth == other.depth &&
           bounds == other.bounds &&

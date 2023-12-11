@@ -14,8 +14,8 @@ class A11yService {
     return await methodChannel.invokeMethod<bool>('isGranted');
   }
 
-  Stream<Result> get onAccessibilityEvent {
-    return _eventChannel.receiveBroadcastStream().map((event) => Result.fromJson(Map.from(event)));
+  Stream<A11yServiceResult> get onAccessibilityEvent {
+    return _eventChannel.receiveBroadcastStream().map((event) => A11yServiceResult.fromJson(Map.from(event)));
   }
 
   Stream<bool> get onPermissionChanged {
@@ -73,11 +73,11 @@ class A11yService {
       });
 
   /// get current window node tree manually
-  Future<Result?> analyze() async {
+  Future<A11yServiceResult?> analyze() async {
     final result = await methodChannel.invokeMethod('analyze');
     if (result == null) {
       return null;
     }
-    return Result.fromJson(Map.from(result));
+    return A11yServiceResult.fromJson(Map.from(result));
   }
 }

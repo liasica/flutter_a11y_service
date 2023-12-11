@@ -1,3 +1,10 @@
+## 0.0.9
+
+* Rename `Nodes` to `A11yServiceNode`
+* Rename `Event` to `A11yServiceEvent`
+* Rename `Result` to `A11yServiceResult`
+
+
 ## 0.0.8
 
 * Add `analyze` method
