@@ -1,3 +1,8 @@
+## 0.0.15
+
+* Remove 100ms sleep
+
+
 ## 0.0.14
 
 * `actionFindTextAndClick` remove repeat click
