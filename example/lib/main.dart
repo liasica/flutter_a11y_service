@@ -50,7 +50,12 @@ class _MyAppState extends State<MyApp> {
                 ),
                 ElevatedButton(
                   onPressed: () async {
-                    final forceStopApp = await _plugin.forceStopApp('com.android.chrome', determine: '强行停止');
+                    final forceStopApp = await _plugin.forceStopApp(
+                      'com.android.chrome',
+                      determine: '确定',
+                      alertDialogName: 'androidx.appcompat.app.AlertDialog',
+                      appDetailsName: 'com.android.settings.applications.InstalledAppDetailsTop',
+                    );
                     print('forceStopApp: $forceStopApp');
                   },
                   child: const Text('Force stop app'),

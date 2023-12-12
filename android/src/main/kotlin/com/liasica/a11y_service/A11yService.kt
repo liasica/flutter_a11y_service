@@ -60,7 +60,7 @@ class A11yService : AccessibilityService() {
             Log.d(Constants.LOG_TAG, "event: $packageName / $className [ $eventType ] : { text = $text, description = $description }")
             if (className.isNotBlank() && packageName.isNotBlank()) {
                 executor.execute {
-                    // Thread.sleep(100)
+                    Thread.sleep(100)
                     // val start = System.currentTimeMillis()
                     val result = analyze(event)
                     analyzeTreeCallback?.invoke(it, result)
@@ -71,8 +71,8 @@ class A11yService : AccessibilityService() {
         }
     }
 
-    fun analyze(event: AccessibilityEvent? = null) : AnalyzedResult {
-        val result = AnalyzedResult(event = event, nodes = arrayListOf())
+    fun analyze(event: AccessibilityEvent? = null): AnalyzedResult {
+        val result = AnalyzedResult(event = event)
         analyzeTree(rootInActiveWindow, result)
         return result
     }
@@ -89,7 +89,7 @@ class A11yService : AccessibilityService() {
             info = node,
             bounds = bounds,
         )
-        list.nodes.add(data)
+        list.nodes[trace.joinToString("-")] = data
         // Log.i(Constants.LOG_TAG, data.toString())
 
         // send event to flutter

@@ -1,4 +1,4 @@
-import 'package:a11y_service/result.dart';
+import 'package:a11y_service/a11y_service_result.dart';
 import 'package:flutter/services.dart';
 
 class A11yService {
@@ -29,7 +29,13 @@ class A11yService {
     String alertDialogName = 'android.app.AlertDialog',
     String appDetailsName = 'com.android.settings.applications.InstalledAppDetailsTop',
   }) async {
-    return await methodChannel.invokeMethod<bool>('forceStopApp', {'name': name, 'forceStop': forceStop, 'determine': determine});
+    return await methodChannel.invokeMethod<bool>('forceStopApp', {
+      'name': name,
+      'forceStop': forceStop,
+      'determine': determine,
+      'alertDialogName': alertDialogName,
+      'appDetailsName': appDetailsName,
+    });
   }
 
   Future<bool?> actionBack() => methodChannel.invokeMethod<bool>('actionBack');
@@ -51,25 +57,22 @@ class A11yService {
   /// Find text node and click
   /// if [expectedText] is not null, it will compare with the [expectedText] of the expected node found, equal to return true
   /// if [expectedText] is null, it will find [text] node found, and click it directly
+  /// @param match [int] 1: EQUALS, 2: CONTAINS, 3: REGEX
   Future<bool?> actionFindTextAndClick({
     required String packageName,
     required String text,
     String? expectedText,
     int? timeout = 10000,
-    bool? textAllMatch = true,
     bool? includeDesc = true,
-    bool? descAllMatch = false,
-    bool? enableRegular = false,
+    int? match = 1,
   }) =>
       methodChannel.invokeMethod<bool>('actionFindTextAndClick', {
         'packageName': packageName,
         'text': text,
         'expectedText': expectedText,
         'timeout': timeout,
-        'textAllMatch': textAllMatch,
         'includeDesc': includeDesc,
-        'descAllMatch': descAllMatch,
-        'enableRegular': enableRegular,
+        'match': match,
       });
 
   /// get current window node tree manually

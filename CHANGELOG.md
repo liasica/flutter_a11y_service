@@ -1,3 +1,16 @@
+## 0.0.13
+
+* Analyze sleep 100ms
+* `forceStopApp` return result after 100ms
+
+
+## 0.0.12
+
+* Change AnalyzedResult nodes to `SortedMap`
+* Optimize node search logic
+* Fix bugs
+
+
 ## 0.0.11
 
 * `forceStopApp` add 10s timeout

@@ -7,6 +7,7 @@ import android.graphics.Rect
 import android.os.Bundle
 import android.view.accessibility.AccessibilityEvent
 import android.view.accessibility.AccessibilityNodeInfo
+import java.util.SortedMap
 
 data class NodeData(
     var depth: List<Int>,
@@ -34,7 +35,8 @@ data class NodeData(
 
 data class AnalyzedResult(
     val event: AccessibilityEvent? = null,
-    val nodes: ArrayList<NodeData> = arrayListOf()
+    // val nodes: ArrayList<NodeData> = arrayListOf()
+    val nodes: SortedMap<String, NodeData> = sortedMapOf(),
 ) {
     fun toMap() = mapOf(
         "event" to mapOf(
@@ -43,7 +45,7 @@ data class AnalyzedResult(
             "text" to event?.text?.joinToString(separator = " ~~ "),
             "description" to event?.contentDescription.nullableString(),
         ),
-        "nodes" to nodes.map { it.toMap() }
+        "nodes" to nodes.mapValues { it.value.toMap() },
     )
 }
 
@@ -169,192 +171,162 @@ fun NodeData?.input(content: String): Boolean {
 }
 
 
-/**
- * 结点解析结果快速调用
- * */
+enum class TextMatchType(var value: Int) {
+    EQUALS(1),
+    CONTAINS(2),
+    REGEX(3);
 
-/**
- * 根据文本查找结点列表
- *
- * @param text 匹配的文本
- * @param textAllMatch 文本全匹配
- * @param includeDesc 同时匹配desc
- * @param descAllMatch desc全匹配
- * @param enableRegular 是否启用正则
- * */
-fun AnalyzedResult.findNodesByText(
-    text: String,
-    textAllMatch: Boolean = false,
-    includeDesc: Boolean = false,
-    descAllMatch: Boolean = false,
-    enableRegular: Boolean = false,
-): AnalyzedResult {
-    val result = AnalyzedResult()
-    if (enableRegular) {
-        val regex = Regex(text)
-        nodes.forEach { node ->
-            if (!node.info.text.isNullOrBlank()) {
-                if (regex.find(node.info.text!!) != null) {
-                    result.nodes.add(node)
-                    return@forEach
-                }
-            }
-            if (includeDesc && !node.info.contentDescription.isNullOrBlank()) {
-                if (regex.find(node.info.contentDescription!!) != null) {
-                    result.nodes.add(node)
-                    return@forEach
-                }
-            }
-        }
-    } else {
-        nodes.forEach { node ->
-            if (!node.info.text.isNullOrBlank()) {
-                if (textAllMatch) {
-                    if (text == node.info.text) {
-                        result.nodes.add(node)
-                        return@forEach
-                    }
-                } else {
-                    if (node.info.text!!.contains(text)) {
-                        result.nodes.add(node)
-                        return@forEach
-                    }
-                }
-            }
-            if (includeDesc && !node.info.contentDescription.isNullOrBlank()) {
-                if (descAllMatch) {
-                    if (text == node.info.contentDescription) {
-                        result.nodes.add(node)
-                        return@forEach
-                    }
-                } else {
-                    if (node.info.contentDescription!!.contains(text)) {
-                        result.nodes.add(node)
-                        return@forEach
-                    }
-                }
-            }
-        }
+    companion object {
+        infix fun from(value: Int?): TextMatchType = TextMatchType.values().firstOrNull { it.value == (value ?: 0) } ?: EQUALS
     }
-    return result
 }
 
 /**
- * 根据id查找结点 (模糊匹配)
+ * Find node by viewIdResourceName
  *
- * @param id 结点id
+ * @param id [String] node's [AccessibilityNodeInfo.getViewIdResourceName]
+ * @param match [TextMatchType] matches type, default is [TextMatchType.EQUALS]
  * */
-fun AnalyzedResult.findNodeById(id: String): NodeData? {
-    nodes.forEach { node ->
-        if (!node.info.viewIdResourceName.isNullOrBlank()) {
-            if (node.info.viewIdResourceName!!.contains(id)) return node
+fun AnalyzedResult.findNodeById(id: String, match: TextMatchType = TextMatchType.EQUALS): NodeData? {
+    val regex = Regex(id)
+    nodes.forEach { (_, node) ->
+        val nodeId = node.info.viewIdResourceName.nullableString()
+        when (match) {
+            TextMatchType.EQUALS -> {
+                if (nodeId == id) return node
+            }
+
+            TextMatchType.CONTAINS -> {
+                if (nodeId.contains(id)) return node
+            }
+
+            TextMatchType.REGEX -> {
+                if (regex.matches(nodeId)) return node
+            }
         }
     }
     return null
 }
 
 /**
- * 根据id查找结点列表 (模糊匹配)
+ * Find nodes by viewIdResourceName
  *
- * @param id 结点id
+ * @param id [String] node's [AccessibilityNodeInfo.getViewIdResourceName]
+ * @param match [TextMatchType] matches type, default is [TextMatchType.EQUALS]
  * */
-fun AnalyzedResult.findNodesById(id: String): AnalyzedResult {
+fun AnalyzedResult.findNodesById(id: String, match: TextMatchType = TextMatchType.EQUALS): AnalyzedResult {
     val result = AnalyzedResult()
-    nodes.forEach { node ->
-        if (!node.info.viewIdResourceName.isNullOrBlank()) {
-            if (node.info.viewIdResourceName!!.contains(id)) result.nodes.add(node)
+    val regex = Regex(id)
+
+    nodes.forEach { (treeId, node) ->
+        val nodeId = node.info.viewIdResourceName.nullableString()
+        if (
+            when (match) {
+                TextMatchType.EQUALS -> nodeId == id
+                TextMatchType.CONTAINS -> nodeId.contains(id)
+                TextMatchType.REGEX -> regex.matches(nodeId)
+            }
+        ) {
+            result.nodes[treeId] = node
         }
     }
     return result
 }
 
+typealias NodeExpression = (NodeData) -> Boolean
+
 /**
- * 根据传入的表达式结果查找结点
+ * Find single node based on the expression results passed in
  *
- * @param expression 匹配条件表达式
+ * @param expression [NodeExpression]
  * */
-fun AnalyzedResult.findNodeByExpression(expression: (NodeData) -> Boolean): NodeData? {
-    nodes.forEach { node ->
+fun AnalyzedResult.findNodeByExpression(expression: NodeExpression): NodeData? {
+    nodes.forEach { (_, node) ->
         if (expression.invoke(node)) return node
     }
     return null
 }
 
 /**
- * 根据传入的表达式结果查找结点列表
+ * Find nodes based on the expression results passed in
  *
- * @param expression 匹配条件表达式
+ * @param expression [NodeExpression]
  * */
-fun AnalyzedResult.findNodesByExpression(expression: (NodeData) -> Boolean): AnalyzedResult {
+fun AnalyzedResult.findNodesByExpression(expression: NodeExpression): AnalyzedResult {
     val result = AnalyzedResult()
-    nodes.forEach { node ->
-        if (expression.invoke(node)) result.nodes.add(node)
+    nodes.forEach { (treeId, node) ->
+        if (expression.invoke(node)) result.nodes[treeId] = node
     }
     return result
 }
 
 /**
- * 查找所有文本不为空的结点
+ * Find nodes if text or desc is not null or blank
+ *
+ * @param includeDesc [Boolean] include desc or not
  * */
 fun AnalyzedResult.findAllTextNode(includeDesc: Boolean = false): AnalyzedResult {
     val result = AnalyzedResult()
-    nodes.forEach { node ->
-        if (!node.info.text.isNullOrBlank()) {
-            result.nodes.add(node)
-            return@forEach
-        }
-        if (includeDesc && !node.info.contentDescription.isNullOrBlank()) {
-            result.nodes.add(node)
-            return@forEach
+    nodes.forEach { (treeId, node) ->
+        when {
+            !node.info.text.isNullOrBlank() -> result.nodes[treeId] = node
+            includeDesc && !node.info.contentDescription.isNullOrBlank() -> result.nodes[treeId] = node
         }
     }
     return result
 }
 
 /**
- * 根据文本查找结点
+ * Find single node by text
  *
- * @param text 匹配的文本
- * @param textAllMatch 文本全匹配
- * @param includeDesc 同时匹配desc
- * @param descAllMatch desc全匹配
- * @param enableRegular 是否启用正则
+ * @param text [String] to be found
+ * @param includeDesc matches desc or not
+ * @param match [TextMatchType] matches type, default is [TextMatchType.EQUALS]
  * */
-fun AnalyzedResult.findNodeByText(
-    text: String,
-    textAllMatch: Boolean = false,
-    includeDesc: Boolean = false,
-    descAllMatch: Boolean = false,
-    enableRegular: Boolean = false,
-): NodeData? {
-    if (enableRegular) {
-        val regex = Regex(text)
-        nodes.forEach { node ->
-            if (!node.info.text.isNullOrBlank()) {
-                if (regex.find(node.info.text!!) != null) return node
+fun AnalyzedResult.findNodeByText(text: String, includeDesc: Boolean = true, match: TextMatchType = TextMatchType.EQUALS): NodeData? {
+    val regex = Regex(text)
+
+    nodes.forEach { (_, node) ->
+        val nodeText = node.info.text.nullableString()
+        val desc = node.info.contentDescription.nullableString()
+
+        if (
+            when (match) {
+                TextMatchType.EQUALS -> nodeText == text || (includeDesc && desc == text)
+                TextMatchType.CONTAINS -> nodeText.contains(text) || (includeDesc && desc.contains(text))
+                TextMatchType.REGEX -> regex.matches(nodeText) || (includeDesc && regex.matches(desc))
             }
-            if (includeDesc && !node.info.contentDescription.isNullOrBlank()) {
-                if (regex.find(node.info.contentDescription!!) != null) return node
-            }
-        }
-    } else {
-        nodes.forEach { node ->
-            if (!node.info.text.isNullOrBlank()) {
-                if (textAllMatch) {
-                    if (text == node.info.text) return node
-                } else {
-                    if (node.info.text!!.contains(text)) return node
-                }
-            }
-            if (includeDesc && !node.info.contentDescription.isNullOrBlank()) {
-                if (descAllMatch) {
-                    if (text == node.info.contentDescription) return node
-                } else {
-                    if (node.info.contentDescription!!.contains(text)) return node
-                }
-            }
+        ) {
+            return node
         }
     }
     return null
 }
 
+/**
+ * Find all nodes by text
+ *
+ * @param text [String] to be found
+ * @param includeDesc matches desc or not
+ * @param match [TextMatchType] matches type, default is [TextMatchType.EQUALS]
+ * */
+fun AnalyzedResult.findNodesByText(text: String, includeDesc: Boolean = true, match: TextMatchType = TextMatchType.EQUALS): AnalyzedResult {
+    val result = AnalyzedResult()
+    val regex = Regex(text)
+
+    nodes.forEach { (treeId, node) ->
+        val nodeText = node.info.text.nullableString()
+        val desc = node.info.contentDescription.nullableString()
+
+        if (
+            when (match) {
+                TextMatchType.EQUALS -> nodeText == text || (includeDesc && desc == text)
+                TextMatchType.CONTAINS -> nodeText.contains(text) || (includeDesc && desc.contains(text))
+                TextMatchType.REGEX -> regex.matches(nodeText) || (includeDesc && regex.matches(desc))
+            }
+        ) {
+            result.nodes[treeId] = node
+        }
+    }
+    return result
+}

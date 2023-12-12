@@ -5,7 +5,6 @@ import android.content.Context
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.view.accessibility.AccessibilityEvent
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleOwner
@@ -80,7 +79,7 @@ class A11yServicePlugin : FlutterPlugin, MethodCallHandler, DefaultLifecycleObse
         when (call.method) {
             "isGranted" -> result.success(A11yService.isGranted)
             "requestPermission" -> requestPermission(result)
-            "showOverlayWindow" -> showOverlayWindow(call.arguments as Map<*, *>?, result)
+            "showOverlayWindow" -> showOverlayWindow(result)
             "forceStopApp" -> forceStopApp(call.arguments as Map<*, *>?, result)
             "actionBack" -> result.success(context.back())
             "actionHome" -> result.success(context.home())
@@ -91,6 +90,7 @@ class A11yServicePlugin : FlutterPlugin, MethodCallHandler, DefaultLifecycleObse
             "actionLockScreen" -> result.success(context.lockScreen())
             "actionSplitScreen" -> result.success(context.splitScreen())
             "actionFindTextAndClick" -> actionFindTextAndClick(call.arguments as Map<*, *>?, result)
+            "actionFindTreeIdAndClick" -> actionFindTreeIdAndClick(call.arguments as Map<*, *>?, result)
             "analyze" -> result.success(A11yService.instance?.analyze()?.toMap())
             else -> result.notImplemented()
         }
@@ -141,7 +141,7 @@ class A11yServicePlugin : FlutterPlugin, MethodCallHandler, DefaultLifecycleObse
         }
     }
 
-    private fun showOverlayWindow(map: Map<*, *>?, result: Result) {
+    private fun showOverlayWindow(result: Result) {
         if (!_supportOverlayWindow) {
             result.success(false)
         }
@@ -161,29 +161,30 @@ class A11yServicePlugin : FlutterPlugin, MethodCallHandler, DefaultLifecycleObse
                 val handler = Handler(Looper.getMainLooper())
                 handler.postDelayed({
                     Log.d(Constants.LOG_TAG, "forceStopApp timeout, used: ${System.currentTimeMillis() - start}ms")
-                    result.success(false)
                     A11yService.setAnalyzeTreeCallback(null)
                     Thread.sleep(100)
                     context.back()
+                    result.success(false)
                 }, 10000)
 
                 A11yService.setAnalyzeTreeCallback { event, _ ->
                     if (event.className!! == appDetailsName && found.compareAndSet(false, true)) {
                         if (!event.source.findTextAndClick(forceStop)) {
-                            result.success(false)
                             A11yService.setAnalyzeTreeCallback(null)
                             handler.removeCallbacksAndMessages(null)
                             Thread.sleep(100)
                             context.back()
+                            result.success(false)
                             return@setAnalyzeTreeCallback
                         }
                     }
                     if (event.className!! == alertDialogName) {
-                        result.success(event.source.findTextAndClick(determine))
+                        val success = event.source.findTextAndClick(determine)
                         A11yService.setAnalyzeTreeCallback(null)
                         handler.removeCallbacksAndMessages(null)
                         Thread.sleep(100)
                         context.back()
+                        result.success(success)
                         return@setAnalyzeTreeCallback
                     }
                 }
@@ -201,10 +202,8 @@ class A11yServicePlugin : FlutterPlugin, MethodCallHandler, DefaultLifecycleObse
                 val text = it["text"] as String
                 val expectedText = it["expectedText"] as String?
                 val timeout = (it["timeout"] as Int? ?: 10000).toLong()
-                val textAllMatch = it["textAllMatch"] as Boolean? ?: true
                 val includeDesc = it["includeDesc"] as Boolean? ?: true
-                val descAllMatch = it["descAllMatch"] as Boolean? ?: false
-                val enableRegular = it["enableRegular"] as Boolean? ?: false
+                val match = TextMatchType.from(it["matchType"] as Int?)
 
                 val start = System.currentTimeMillis()
                 val handler = Handler(Looper.getMainLooper())
@@ -220,13 +219,13 @@ class A11yServicePlugin : FlutterPlugin, MethodCallHandler, DefaultLifecycleObse
                 A11yService.setAnalyzeTreeCallback { event, analyzed ->
                     if (event.packageName == packageName) {
                         // find node and click it
-                        val node = analyzed.findNodeByText(text, textAllMatch = textAllMatch, includeDesc = includeDesc, descAllMatch = descAllMatch, enableRegular = enableRegular)
+                        val node = analyzed.findNodeByText(text, includeDesc = includeDesc, match = match)
                         node.click()
 
                         // find expected node
                         var expected = node.click()
                         if (expectedText != null) {
-                            expected = analyzed.findNodeByText(expectedText, textAllMatch = textAllMatch, includeDesc = includeDesc, descAllMatch = descAllMatch, enableRegular = enableRegular) != null
+                            expected = analyzed.findNodeByText(expectedText, includeDesc = includeDesc, match = match) != null
                         }
 
                         Log.d(Constants.LOG_TAG, "expected: $expected, findNodeByText: $node, nodes: ${analyzed.nodes.size}")
@@ -243,5 +242,9 @@ class A11yServicePlugin : FlutterPlugin, MethodCallHandler, DefaultLifecycleObse
                 result.success(false)
             }
         }
+    }
+
+    private fun actionFindTreeIdAndClick(map: Map<*, *>?, result: Result) {
+        TODO("Not yet implemented")
     }
 }
