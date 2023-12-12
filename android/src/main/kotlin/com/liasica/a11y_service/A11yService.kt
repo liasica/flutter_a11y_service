@@ -60,6 +60,7 @@ class A11yService : AccessibilityService() {
             Log.d(Constants.LOG_TAG, "event: $packageName / $className [ $eventType ] : { text = $text, description = $description }")
             if (className.isNotBlank() && packageName.isNotBlank()) {
                 executor.execute {
+                    // Thread.sleep(100)
                     // val start = System.currentTimeMillis()
                     val result = analyze(event)
                     analyzeTreeCallback?.invoke(it, result)
