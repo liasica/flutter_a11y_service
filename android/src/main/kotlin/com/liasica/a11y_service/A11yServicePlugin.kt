@@ -220,10 +220,9 @@ class A11yServicePlugin : FlutterPlugin, MethodCallHandler, DefaultLifecycleObse
                     if (event.packageName == packageName) {
                         // find node and click it
                         val node = analyzed.findNodeByText(text, includeDesc = includeDesc, match = match)
-                        node.click()
+                        var expected = node.click()
 
                         // find expected node
-                        var expected = node.click()
                         if (expectedText != null) {
                             expected = analyzed.findNodeByText(expectedText, includeDesc = includeDesc, match = match) != null
                         }

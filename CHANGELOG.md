@@ -1,3 +1,8 @@
+## 0.0.14
+
+* `actionFindTextAndClick` remove repeat click
+
+
 ## 0.0.13
 
 * Analyze sleep 100ms
